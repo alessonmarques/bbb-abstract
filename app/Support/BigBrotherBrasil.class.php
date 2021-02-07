@@ -11,20 +11,19 @@ class BigBrotherBrasil
 
     protected   $domain;
 
-    protected   $edition;
+    public   $edition;
 
-    protected   $lastUpdate;
+    public   $lastUpdate;
 
-    protected   $brothers;
-    protected   $totalBrothers;
-    protected   $totalInGame;
-    protected   $totalOutGame;
+    public   $brothers;
+    public   $totalBrothers;
+    public   $totalInGame;
+    public   $totalOutGame;
 
     function __construct()
     {
         $this->edition      = 'bbb2021';
         $this->domain       = "https://gshow.globo.com/realities/bbb/";
-        $this->startDate    = date('Y-m-d H:i:s');
         $this->load();
     }
 
