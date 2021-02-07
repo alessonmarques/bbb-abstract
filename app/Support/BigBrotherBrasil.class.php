@@ -66,7 +66,7 @@ class BigBrotherBrasil
     function save()
     {
         $this->lastUpdate = date('Y-m-d H:i:s');
-
+        $this->verifyPath($this::PATH_TO_LOCAL_DATA);
         $fileName = $this::PATH_TO_LOCAL_DATA."{$this->edition}.data";
         $dataHandle = fopen($fileName, 'wa+');
         fwrite($dataHandle, $this);
@@ -114,6 +114,31 @@ class BigBrotherBrasil
     function verifyInGame($item)
     {
         return (bool) !$item->eliminated;
+    }
+
+    function verifyPath($path)
+    {
+        $actualPath = '/';
+        if($path[strlen($path) - 1] == '/') 
+        {
+            $path = substr($path, 0, strlen($path) - 1);
+        }
+
+        $exploitedPath =  explode('/', $path);
+        array_shift($exploitedPath);
+
+        foreach($exploitedPath as $folder)
+        {
+            $scan = scandir($actualPath);
+            array_shift($scan);array_shift($scan);
+
+            $actualPath .= $folder.'/';
+            if(!in_array($folder, $scan))
+            {
+                mkdir($actualPath, 0777);
+            }
+        }
+        return $path.'/';
     }
 
 }

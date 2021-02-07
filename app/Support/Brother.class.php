@@ -94,7 +94,7 @@ class Brother
     function save()
     {
         $this->updatedOn = date('Y-m-d H:i:s');
-
+        $this->verifyPath($this::PATH_TO_LOCAL_DATA);
         $fileName = $this::PATH_TO_LOCAL_DATA."{$this->getMountedName($this->name)}.data";
         $dataHandle = fopen($fileName, 'wa+');
         fwrite($dataHandle, $this);
@@ -178,12 +178,37 @@ class Brother
     }
     */
 
+    function verifyPath($path)
+    {
+        $actualPath = '/';
+        if($path[strlen($path) - 1] == '/') 
+        {
+            $path = substr($path, 0, strlen($path) - 1);
+        }
+
+        $exploitedPath =  explode('/', $path);
+        array_shift($exploitedPath);
+
+        foreach($exploitedPath as $folder)
+        {
+            $scan = scandir($actualPath);
+            array_shift($scan);array_shift($scan);
+
+            $actualPath .= $folder.'/';
+            if(!in_array($folder, $scan))
+            {
+                mkdir($actualPath, 0777);
+            }
+        }
+        return $path.'/';
+    }
+
     private function getMountedName($name)
     {
         return str_replace([' ', '_', '-'], '-', strtolower($this->removeAccent($name)));
     }
     
-    function removeAccent($string){
+    private function removeAccent($string){
         return preg_replace(array("/(á|à|ã|â|ä)/","/(Á|À|Ã|Â|Ä)/","/(é|è|ê|ë)/","/(É|È|Ê|Ë)/","/(í|ì|î|ï)/","/(Í|Ì|Î|Ï)/","/(ó|ò|õ|ô|ö)/","/(Ó|Ò|Õ|Ô|Ö)/","/(ú|ù|û|ü)/","/(Ú|Ù|Û|Ü)/","/(ñ)/","/(Ñ)/"),explode(" ","a A e E i I o O u U n N"),$string);
     }
 }
