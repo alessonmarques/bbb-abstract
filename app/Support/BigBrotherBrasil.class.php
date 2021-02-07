@@ -28,7 +28,7 @@ class BigBrotherBrasil
         $this->load();
     }
 
-    function __toString()
+    function toArray()
     {
         $lastUpdate        = $this->lastUpdate;
 
@@ -39,6 +39,12 @@ class BigBrotherBrasil
         $brothers          = $this->brothers;
 
         $brotherData       = compact( 'lastUpdate', 'totalBrothers', 'totalInGame', 'totalOutGame', 'brothers' );
+        return $brotherData;
+    }
+
+    function __toString()
+    {
+        $brotherData       = $this->toArray();
         return json_encode($brotherData);
     }
 
@@ -49,9 +55,13 @@ class BigBrotherBrasil
         
         if(isset($loadedData) && !empty($loadedData))
         {
-            $this->lastUpdate       = isset($loadedData->lastUpdate) && !empty($loadedData->lastUpdate) ? $loadedData->lastUpdate : null;
-        }
+            $this->lastUpdate       = isset($loadedData->lastUpdate)    && !empty($loadedData->lastUpdate)      ? $loadedData->lastUpdate : null;
 
+            $this->brothers         = isset($loadedData->brothers)      && !empty($loadedData->brothers)        ? $loadedData->brothers : null;
+            $this->totalBrothers    = isset($loadedData->totalBrothers) && !empty($loadedData->totalBrothers)   ? $loadedData->totalBrothers : null;
+            $this->totalInGame      = isset($loadedData->totalInGame)   && !empty($loadedData->totalInGame)     ? $loadedData->totalInGame : null;
+            $this->totalOutGame     = isset($loadedData->totalOutGame)  && !empty($loadedData->totalOutGame)    ? $loadedData->totalOutGame : null;
+        }
     }
 
     function save()
@@ -77,7 +87,7 @@ class BigBrotherBrasil
         {
             $jsonData    = $match[0][0];
             $jsonData    = substr($jsonData, 0, strlen($jsonData) - strlen(',{"config'));
-            
+                        
             $this->setBrothersData($jsonData);
         }
     }
@@ -104,7 +114,7 @@ class BigBrotherBrasil
 
     function verifyInGame($item)
     {
-        return (!(json_decode($item))->eliminated);
+        return (bool) !$item->eliminated;
     }
 
 }

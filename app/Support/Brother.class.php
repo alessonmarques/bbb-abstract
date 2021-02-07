@@ -11,8 +11,14 @@ class Brother
 
     private $name;
     private $description;
+    private $instagram;
+    private $instagramUrl;
     
     private $perfilUrl;
+    private $knowBrotherUrl;
+
+    private $knowMoreUrl;
+    private $knowMoreUri;
     
     private $photo;
     private $headPhoto;
@@ -23,20 +29,32 @@ class Brother
 
        
 
-    function __construct(){}
+    function __construct()
+    {
+        $this->knowMoreUrl   = "https://gshow.globo.com/realities/bbb/bbb21/participante/noticia/";
+    }
 
-    function __toString()
+    function toArray()
     {
         $name              = $this->name;
         $description       = $this->description;
+        $instagram         = $this->instagram;
+        $instagramUrl      = $this->instagramUrl;
         $perfilUrl         = $this->perfilUrl;
+        $knowBrotherUrl    = $this->knowBrotherUrl;
         $photo             = $this->photo;
         $headPhoto         = $this->headPhoto;
         $eliminated        = $this->eliminated;
         $eliminatedOn      = $this->eliminatedOn;
         $updatedOn         = $this->updatedOn;
 
-        $brotherData       = compact( 'name', 'description', 'perfilUrl', 'photo', 'headPhoto', 'eliminated', 'eliminatedOn', 'updatedOn');
+        $brotherData       = compact( 'name', 'description', 'instagram', 'instagramUrl', 'perfilUrl', 'knowBrotherUrl', 'photo', 'headPhoto', 'eliminated', 'eliminatedOn', 'updatedOn');
+        return $brotherData;
+    }
+
+    function __toString()
+    {
+        $brotherData       = $this->toArray();
         return json_encode($brotherData);
     }
     
@@ -49,11 +67,14 @@ class Brother
         {
             $this->name              = isset($loadedData->name) && !empty($loadedData->name) ? $loadedData->name : null;
             $this->description       = isset($loadedData->description) && !empty($loadedData->description) ? $loadedData->description : null;
+            $this->instagram         = isset($loadedData->instagram) && !empty($loadedData->instagram) ? $loadedData->instagram : null;
+            $this->instagramUrl      = isset($loadedData->instagramUrl) && !empty($loadedData->instagramUrl) ? $loadedData->instagramUrl : null;
             $this->perfilUrl         = isset($loadedData->perfilUrl) && !empty($loadedData->perfilUrl) ? $loadedData->perfilUrl : null;
             $this->photo             = isset($loadedData->photo) && !empty($loadedData->photo) ? $loadedData->photo : null;
             $this->headPhoto         = isset($loadedData->headPhoto) && !empty($loadedData->headPhoto) ? $loadedData->headPhoto : null;
             $this->eliminated        = isset($loadedData->eliminated) && !empty($loadedData->eliminated) ? $loadedData->eliminated : null;
             $this->eliminatedOn      = isset($loadedData->eliminatedOn) && !empty($loadedData->eliminatedOn) ? $loadedData->eliminatedOn : null;
+            $this->knowBrotherUrl    = isset($loadedData->knowBrotherUrl) && !empty($loadedData->knowBrotherUrl) ? $loadedData->knowBrotherUrl : null;
         }
         else
         {
@@ -67,7 +88,7 @@ class Brother
         $this->load($mountedName);
         $this->loadExternalData($externalData);
 
-        return $this->__toString();
+        return (object) $this->toArray();
     }
 
     function save()
@@ -84,7 +105,6 @@ class Brother
     {
         if( !$externalData->eliminado || $this->newBrother )
         {
-
             $content    = file_get_contents($externalData->url);
             $pattern    = '/"config":{"apiName":"function-post-personalities".*"type":"post-card-personalities"/';
             preg_match_all($pattern, $content, $match);
@@ -103,13 +123,13 @@ class Brother
 
         if($this->newBrother)
         {
-            $this->name         = $externalData->nome;
-            $this->perfilUrl    = $externalData->url;
-            $this->headPhoto    = $externalData->foto;
-            $this->eliminated   = $externalData->eliminado;
-            $this->eliminatedOn = '';
-            $this->photo        = $brotherData->externalData->image;
-            $this->description  = $brotherData->externalData->description;
+            $this->name             = $externalData->nome;
+            $this->perfilUrl        = $externalData->url;
+            $this->headPhoto        = $externalData->foto;
+            $this->eliminated       = $externalData->eliminado;
+            $this->eliminatedOn     = '';
+            $this->photo            = $brotherData->externalData->image;
+            $this->description      = $brotherData->externalData->description;
         }
         else
         {
@@ -117,12 +137,53 @@ class Brother
             $this->eliminated   = $externalData->eliminado;
         }
 
+        if(!isset($this->instagram))
+            $this->getBrotherSocial();
+
+        //$this->getBrotherSocialData();
+
         $this->save();
     }
 
-    private function getMountedName($name)
+    private function getBrotherSocial()
     {
-        return str_replace([' ', '_', '-'], '', strtolower($name));
+        $this->knowMoreUri      = "{$this->getMountedName($this->name)}-e-participante-do-bbb21-conheca.ghtml";
+        $this->knowBrotherUrl   = "{$this->knowMoreUrl}{$this->knowMoreUri}";
+        $content    = @file_get_contents($this->knowBrotherUrl);
+
+        if(!(isset($content) && !empty($content)))
+        {   
+            $this->knowMoreUri      = "{$this->getMountedName($this->name)}-esta-no-bbb21-conheca.ghtml";
+            $this->knowBrotherUrl   = "{$this->knowMoreUrl}{$this->knowMoreUri}";
+            $content    = @file_get_contents($this->knowBrotherUrl);
+        }
+
+        $pattern                    = '/<a href="https:\/\/www\.instagram\.com\/\.*(.*)\/" target="_blank">/';
+        preg_match_all($pattern, $content, $match);
+
+        $this->instagram            = isset($match[1][0]) && !empty($match[1][0]) ? $match[1][0] : '';
+        $this->instagramUrl         = "https://www.instagram.com/{$this->instagram}/";
     }
 
+    /*
+    //Waiting to put Instagram Graph API.
+    private function getBrotherSocialData()
+    {
+        $content    = file_get_contents($this->instagramUrl);
+
+        echo $content;
+
+        $pattern    = '/'."\/$this->instagram\/followers\/.*title=\"(.*)\">".'/';
+        preg_match_all($pattern, $content, $match);
+    }
+    */
+
+    private function getMountedName($name)
+    {
+        return str_replace([' ', '_', '-'], '-', strtolower($this->removeAccent($name)));
+    }
+    
+    function removeAccent($string){
+        return preg_replace(array("/(á|à|ã|â|ä)/","/(Á|À|Ã|Â|Ä)/","/(é|è|ê|ë)/","/(É|È|Ê|Ë)/","/(í|ì|î|ï)/","/(Í|Ì|Î|Ï)/","/(ó|ò|õ|ô|ö)/","/(Ó|Ò|Õ|Ô|Ö)/","/(ú|ù|û|ü)/","/(Ú|Ù|Û|Ü)/","/(ñ)/","/(Ñ)/"),explode(" ","a A e E i I o O u U n N"),$string);
+    }
 }
