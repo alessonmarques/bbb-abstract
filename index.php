@@ -5,4 +5,6 @@
 
     $bbb = new BigBrotherBrasil();
 
+    echo "<pre>";
     $bbb->getBrothersData();
+    echo "</pre>";

@@ -3,20 +3,65 @@
 
 namespace app\Support;
 
-use Brother;
+use app\Support\Brother;
 
 class BigBrotherBrasil
 {
-    protected   $domain;
-    protected   $start_date; 
-    protected   $last_update;
+    const PATH_TO_LOCAL_DATA = __DIR__ . '/../Extras/data/';
 
-    private     $json_product;
+    protected   $domain;
+
+    protected   $edition;
+
+    protected   $lastUpdate;
+
+    protected   $brothers;
+    protected   $totalBrothers;
+    protected   $totalInGame;
+    protected   $totalOutGame;
 
     function __construct()
     {
-        $this->domain = "https://gshow.globo.com/realities/bbb/";
-        $this->start_date = date('Y-m-d H:i:s');
+        $this->edition      = 'bbb2021';
+        $this->domain       = "https://gshow.globo.com/realities/bbb/";
+        $this->startDate    = date('Y-m-d H:i:s');
+        $this->load();
+    }
+
+    function __toString()
+    {
+        $lastUpdate        = $this->lastUpdate;
+
+        $totalBrothers     = $this->totalBrothers;
+        $totalInGame       = $this->totalInGame;
+        $totalOutGame      = $this->totalOutGame;
+
+        $brothers          = $this->brothers;
+
+        $brotherData       = compact( 'lastUpdate', 'totalBrothers', 'totalInGame', 'totalOutGame', 'brothers' );
+        return json_encode($brotherData);
+    }
+
+    function load()
+    {
+        $fileName = $this::PATH_TO_LOCAL_DATA."{$this->edition}.data";
+        $loadedData = json_decode(@file($fileName)[0]);
+        
+        if(isset($loadedData) && !empty($loadedData))
+        {
+            $this->lastUpdate       = isset($loadedData->lastUpdate) && !empty($loadedData->lastUpdate) ? $loadedData->lastUpdate : null;
+        }
+
+    }
+
+    function save()
+    {
+        $this->lastUpdate = date('Y-m-d H:i:s');
+
+        $fileName = $this::PATH_TO_LOCAL_DATA."{$this->edition}.data";
+        $dataHandle = fopen($fileName, 'wa+');
+        fwrite($dataHandle, $this);
+        fclose($dataHandle);
     }
 
     function getBrothersData()
@@ -30,22 +75,36 @@ class BigBrotherBrasil
 
         if(isset($match[0]) && !empty($match[0]))
         {
-            $json_data    = $match[0][0];
-            $json_data    = substr($json_data, 0, strlen($json_data) - strlen(',{"config'));
+            $jsonData    = $match[0][0];
+            $jsonData    = substr($jsonData, 0, strlen($jsonData) - strlen(',{"config'));
             
-            $this->setBrothersData($json_data);
+            $this->setBrothersData($jsonData);
         }
     }
 
-    function setBrothersData($brothersData)
+    private function setBrothersData($brothersData)
     {
         $brothersData = json_decode($brothersData);
+        $catchedBrothers = $brothersData->externalData;
 
-        $brothers = $brothersData->externalData;
+        $brothers = [];
+        $brother = new Brother();
+        foreach($catchedBrothers as $catchedBrother)
+        {
+            $brothers[] = $brother->loadCatchedData($catchedBrother);
+        }
 
-        echo "<pre>";
-            print_r($brothers);
-        echo "</pre>";
+        $this->brothers         = $brothers;
+        $this->totalBrothers    = count($brothers);
+        $this->totalInGame      = count(array_filter($brothers, [$this, "verifyInGame"]));
+        $this->totalOutGame     = $this->totalBrothers - $this->totalInGame;
+
+        $this->save();
+    }
+
+    function verifyInGame($item)
+    {
+        return (!(json_decode($item))->eliminated);
     }
 
 }
