@@ -22,6 +22,8 @@ class BigBrotherBrasil
 
     function __construct()
     {
+        $this->verifyPath($this::PATH_TO_LOCAL_DATA);
+        
         $this->edition      = 'bbb2021';
         $this->domain       = "https://gshow.globo.com/realities/bbb/";
         $this->load();
@@ -66,7 +68,7 @@ class BigBrotherBrasil
     function save()
     {
         $this->lastUpdate = date('Y-m-d H:i:s');
-        $this->verifyPath($this::PATH_TO_LOCAL_DATA);
+
         $fileName = $this::PATH_TO_LOCAL_DATA."{$this->edition}.data";
         $dataHandle = fopen($fileName, 'wa+');
         fwrite($dataHandle, $this);

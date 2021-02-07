@@ -31,6 +31,8 @@ class Brother
 
     function __construct()
     {
+        $this->verifyPath($this::PATH_TO_LOCAL_DATA);
+        
         $this->knowMoreUrl   = "https://gshow.globo.com/realities/bbb/bbb21/participante/noticia/";
     }
 
@@ -94,7 +96,7 @@ class Brother
     function save()
     {
         $this->updatedOn = date('Y-m-d H:i:s');
-        $this->verifyPath($this::PATH_TO_LOCAL_DATA);
+        
         $fileName = $this::PATH_TO_LOCAL_DATA."{$this->getMountedName($this->name)}.data";
         $dataHandle = fopen($fileName, 'wa+');
         fwrite($dataHandle, $this);
