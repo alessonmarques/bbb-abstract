@@ -1,0 +1,19 @@
+{
+    "name": "aless/bbb-abstract",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Alesson Marques",
+            "email": "alessonmarques@live.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        },
+        "classmap": [
+            "app/Support"
+        ]
+    }
+}
