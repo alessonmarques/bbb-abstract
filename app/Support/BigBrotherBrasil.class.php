@@ -7,7 +7,7 @@ use app\Support\Brother;
 
 class BigBrotherBrasil
 {
-    const PATH_TO_LOCAL_DATA = __DIR__ . '/../Extras/data/';
+    private  $pathToLocalData;
 
     protected   $domain;
 
@@ -22,8 +22,9 @@ class BigBrotherBrasil
 
     function __construct()
     {
-        $this->verifyPath($this::PATH_TO_LOCAL_DATA);
-        
+        $this->pathToLocalData    = (substr((__DIR__), 0, strpos((__DIR__), '/Support'))) . '/Extras/data/';
+        $this->verifyPath($this->pathToLocalData);
+
         $this->edition      = 'bbb2021';
         $this->domain       = "https://gshow.globo.com/realities/bbb/";
         $this->load();
@@ -51,7 +52,7 @@ class BigBrotherBrasil
 
     function load()
     {
-        $fileName = $this::PATH_TO_LOCAL_DATA."{$this->edition}.data";
+        $fileName = $this->pathToLocalData."{$this->edition}.data";
         $loadedData = json_decode(@file($fileName)[0]);
         
         if(isset($loadedData) && !empty($loadedData))
@@ -69,7 +70,7 @@ class BigBrotherBrasil
     {
         $this->lastUpdate = date('Y-m-d H:i:s');
 
-        $fileName = $this::PATH_TO_LOCAL_DATA."{$this->edition}.data";
+        $fileName = $this->pathToLocalData."{$this->edition}.data";
         $dataHandle = fopen($fileName, 'wa+');
         fwrite($dataHandle, $this);
         fclose($dataHandle);

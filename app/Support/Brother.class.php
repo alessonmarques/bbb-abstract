@@ -5,7 +5,7 @@ namespace app\Support;
 
 class Brother
 {
-    const PATH_TO_LOCAL_DATA = __DIR__ . '/../Extras/data/brothers/';
+    private  $pathToLocalData;
 
     protected $newBrother;  
 
@@ -31,7 +31,8 @@ class Brother
 
     function __construct()
     {
-        $this->verifyPath($this::PATH_TO_LOCAL_DATA);
+        $this->pathToLocalData    = (substr((__DIR__), 0, strpos((__DIR__), '/Support'))) . '/Extras/data/brothers/';
+        $this->verifyPath($this->pathToLocalData);
         
         $this->knowMoreUrl   = "https://gshow.globo.com/realities/bbb/bbb21/participante/noticia/";
     }
@@ -62,7 +63,7 @@ class Brother
     
     function load($brotherName)
     {   
-        $fileName = $this::PATH_TO_LOCAL_DATA."{$brotherName}.data";
+        $fileName = $this->pathToLocalData."{$brotherName}.data";
         $loadedData = json_decode(@file($fileName)[0]);
         
         if(isset($loadedData) && !empty($loadedData))
@@ -97,7 +98,7 @@ class Brother
     {
         $this->updatedOn = date('Y-m-d H:i:s');
         
-        $fileName = $this::PATH_TO_LOCAL_DATA."{$this->getMountedName($this->name)}.data";
+        $fileName = $this->pathToLocalData."{$this->getMountedName($this->name)}.data";
         $dataHandle = fopen($fileName, 'wa+');
         fwrite($dataHandle, $this);
         fclose($dataHandle);
@@ -190,13 +191,14 @@ class Brother
 
         $exploitedPath =  explode('/', $path);
         array_shift($exploitedPath);
-
+        
         foreach($exploitedPath as $folder)
         {
             $scan = scandir($actualPath);
             array_shift($scan);array_shift($scan);
 
             $actualPath .= $folder.'/';
+
             if(!in_array($folder, $scan))
             {
                 mkdir($actualPath, 0777);
