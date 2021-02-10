@@ -10,7 +10,7 @@ class Brother
     protected $newBrother;  
 
     private $name;
-    private $description;
+    private $infos;
     private $instagram;
     private $instagramUrl;
     
@@ -33,14 +33,14 @@ class Brother
     {
         $this->pathToLocalData    = (substr((__DIR__), 0, strpos((__DIR__), '/Support'))) . '/Extras/data/brothers/';
         $this->verifyPath($this->pathToLocalData);
-        
+
         $this->knowMoreUrl   = "https://gshow.globo.com/realities/bbb/bbb21/participante/noticia/";
     }
 
     function toArray()
     {
         $name              = $this->name;
-        $description       = $this->description;
+        $infos             = $this->infos;
         $instagram         = $this->instagram;
         $instagramUrl      = $this->instagramUrl;
         $perfilUrl         = $this->perfilUrl;
@@ -51,7 +51,7 @@ class Brother
         $eliminatedOn      = $this->eliminatedOn;
         $updatedOn         = $this->updatedOn;
 
-        $brotherData       = compact( 'name', 'description', 'instagram', 'instagramUrl', 'perfilUrl', 'knowBrotherUrl', 'photo', 'headPhoto', 'eliminated', 'eliminatedOn', 'updatedOn');
+        $brotherData       = compact( 'name', 'infos', 'instagram', 'instagramUrl', 'perfilUrl', 'knowBrotherUrl', 'photo', 'headPhoto', 'eliminated', 'eliminatedOn', 'updatedOn');
         return $brotherData;
     }
 
@@ -69,7 +69,7 @@ class Brother
         if(isset($loadedData) && !empty($loadedData))
         {
             $this->name              = isset($loadedData->name) && !empty($loadedData->name) ? $loadedData->name : null;
-            $this->description       = isset($loadedData->description) && !empty($loadedData->description) ? $loadedData->description : null;
+            $this->infos             = isset($loadedData->infos) && !empty($loadedData->infos) ? $loadedData->infos : null;
             $this->instagram         = isset($loadedData->instagram) && !empty($loadedData->instagram) ? $loadedData->instagram : null;
             $this->instagramUrl      = isset($loadedData->instagramUrl) && !empty($loadedData->instagramUrl) ? $loadedData->instagramUrl : null;
             $this->perfilUrl         = isset($loadedData->perfilUrl) && !empty($loadedData->perfilUrl) ? $loadedData->perfilUrl : null;
@@ -132,18 +132,19 @@ class Brother
             $this->eliminated       = $externalData->eliminado;
             $this->eliminatedOn     = '';
             $this->photo            = $brotherData->externalData->image;
-            $this->description      = $brotherData->externalData->description;
+
+            $descriptionInfo        = explode("|", $brotherData->externalData->description);
+                                      array_walk($descriptionInfo, [$this, 'trim_array']);
+            $this->infos            = $descriptionInfo;
         }
         else
         {
             $this->eliminatedOn = ($this->eliminated != $externalData->eliminado ? date('Y-m-d') : '');
             $this->eliminated   = $externalData->eliminado;
-        }
+        }   
 
         if(!isset($this->instagram))
             $this->getBrotherSocial();
-
-        //$this->getBrotherSocialData();
 
         $this->save();
     }
@@ -167,19 +168,6 @@ class Brother
         $this->instagram            = isset($match[1][0]) && !empty($match[1][0]) ? $match[1][0] : '';
         $this->instagramUrl         = "https://www.instagram.com/{$this->instagram}/channel/?__a=1";
     }
-
-    /*
-    //Waiting to put Instagram Graph API.
-    private function getBrotherSocialData()
-    {
-        $content    = file_get_contents($this->instagramUrl);
-
-        echo $content;
-
-        $pattern    = '/'."\/$this->instagram\/followers\/.*title=\"(.*)\">".'/';
-        preg_match_all($pattern, $content, $match);
-    }
-    */
 
     function verifyPath($path)
     {
@@ -214,5 +202,9 @@ class Brother
     
     private function removeAccent($string){
         return preg_replace(array("/(á|à|ã|â|ä)/","/(Á|À|Ã|Â|Ä)/","/(é|è|ê|ë)/","/(É|È|Ê|Ë)/","/(í|ì|î|ï)/","/(Í|Ì|Î|Ï)/","/(ó|ò|õ|ô|ö)/","/(Ó|Ò|Õ|Ô|Ö)/","/(ú|ù|û|ü)/","/(Ú|Ù|Û|Ü)/","/(ñ)/","/(Ñ)/"),explode(" ","a A e E i I o O u U n N"),$string);
+    }
+
+    private function trim_array (&$value, $key) {
+        $value = trim($value);
     }
 }
