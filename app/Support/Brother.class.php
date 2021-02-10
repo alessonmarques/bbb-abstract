@@ -165,7 +165,7 @@ class Brother
         preg_match_all($pattern, $content, $match);
 
         $this->instagram            = isset($match[1][0]) && !empty($match[1][0]) ? $match[1][0] : '';
-        $this->instagramUrl         = "https://www.instagram.com/{$this->instagram}/";
+        $this->instagramUrl         = "https://www.instagram.com/{$this->instagram}/channel/?__a=1";
     }
 
     /*
