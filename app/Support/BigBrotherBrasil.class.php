@@ -100,9 +100,9 @@ class BigBrotherBrasil
         $catchedBrothers = $brothersData->externalData;
 
         $brothers = [];
-        $brother = new Brother();
         foreach($catchedBrothers as $catchedBrother)
         {
+            $brother = new Brother();
             $brothers[] = $brother->loadCatchedData($catchedBrother);
         }
 
