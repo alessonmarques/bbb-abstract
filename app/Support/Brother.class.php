@@ -167,6 +167,7 @@ class Brother
 
         $this->instagram            = isset($match[1][0]) && !empty($match[1][0]) ? $match[1][0] : '';
         $this->instagramUrl         = "https://www.instagram.com/{$this->instagram}/channel/?__a=1";
+        $this->instagramData        = [];
     }
 
     function verifyPath($path)
