@@ -79,7 +79,7 @@ class BigBrotherBrasil
     function getBrothersData()
     {
         $content    = file_get_contents($this->domain);
-        $pattern    = '/{"config":{"apiName":"card-participantes-bbb"}.*."},{"config/';
+        $pattern    = '/{"config":{"apiName":"card-participantes-bbb"}.*."}]},/';
         preg_match_all($pattern, $content, $match);
 
         if(!(isset($match[0]) && !empty($match[0])))
@@ -88,7 +88,7 @@ class BigBrotherBrasil
         if(isset($match[0]) && !empty($match[0]))
         {
             $jsonData    = $match[0][0];
-            $jsonData    = substr($jsonData, 0, strlen($jsonData) - strlen(',{"config'));
+            $jsonData    = substr($jsonData, 0, strlen($jsonData) - strlen(']},'));
                         
             $this->setBrothersData($jsonData);
         }
